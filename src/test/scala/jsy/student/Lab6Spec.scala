@@ -4,6 +4,7 @@ import jsy.lab6.ast._
 import jsy.lab6.{Lab6Like, RegExprParser}
 import jsy.tester.JavascriptyTester
 import org.scalatest._
+import org.scalatest.prop.PropertyChecks
 
 import scala.util.matching.Regex
 
@@ -27,6 +28,29 @@ object Lab6Harness {
   def retestRegex(re: Regex, str: String): Boolean =
     !re.findPrefixOf(str).isEmpty
 
+}
+
+class Lab6FoldLeftTests(lab6: Lab6Like) extends FlatSpec with PropertyChecks with Matchers {
+  behavior of "foldLeftAndThen"
+
+  it should "perform left-to-right, in-order traversal to reverse a list" in {
+    forAll { (l: List[Int]) =>
+      val t = lab6.treeFromList(l)
+      val folded = lab6.foldLeftAndThen(t)(Nil: List[Int]) { (acc, h) => h :: acc } { acc => acc }
+      folded shouldBe l.sorted.reverse
+    }
+  }
+
+  it should "perform left-to-right, in-order traversal to compute multiplication of elements" in {
+    forAll { (l: List[Int]) =>
+      val t = lab6.treeFromList(l)
+      val op = { (acc: Int, h: Int) => acc * h }
+      val sc = { acc: Int => acc * 2 }
+      val folded = lab6.foldLeftAndThen(t)(1)(op)(sc)
+      val golden = sc(l.foldLeft(1)(op))
+      folded shouldBe golden
+    }
+  }
 }
 
 class Lab6Spec(lab6: Lab6Like) extends FlatSpec {
@@ -107,14 +131,17 @@ class Lab6Spec(lab6: Lab6Like) extends FlatSpec {
   
 }
 
-// An adapter class to pass in your Lab5 object.
+// An adapter class to pass in your lab object.
 class Lab6SpecRunner extends Lab6Spec(jsy.student.Lab6)
+class Lab6FoldLeftTestsRunner extends Lab6FoldLeftTests(jsy.student.Lab6)
 
-// The next bit of code runs a test for each .jsy file in src/test/resources/lab4.
+// The next bit of code runs a test for each .jsy file in src/test/resources/lab6.
 // The test expects a corresponding .ans file with the expected result.
-class Lab6JsyTests extends JavascriptyTester(None, "lab6", Lab6)
+//class Lab6JsyTests extends JavascriptyTester(None, "lab6", Lab6)
 
 class Lab6Suite extends Suites(
+  // uncomment this line (and above) if you create .jsy tests
+  //new Lab6JsyTests,
   new Lab6SpecRunner,
-  new Lab6JsyTests
+  new Lab6FoldLeftTestsRunner
 )

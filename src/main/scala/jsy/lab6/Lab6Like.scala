@@ -127,7 +127,7 @@ trait Lab6Like { a: JsyApplication =>
 
   // Select the parser to use based on the useReferenceRegExprParser flag
   lazy val parser: JsyParser =
-    if (useReferenceRegExprParser) JsyParser else new JsyParser(jsy.student.Lab6.REParser.parse)
+    if (useReferenceRegExprParser) JsyParser else new JsyParser(REParser.parse)
 
   // Interface for main
   def processFile(file: java.io.File) {
